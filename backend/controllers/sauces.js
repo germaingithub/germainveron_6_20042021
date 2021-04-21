@@ -61,3 +61,43 @@ exports.deleteSauce = (req, res, next) => {
     })
     .catch((error) => res.status(500).json({ error }));
 };
+
+exports.addLike = (req,res,next)=> {
+  const userId = req.body.userId;
+  const userLike = req.body.like;
+
+  Sauce.findOne({ _id: req.params.id })
+  .then ((sauce)=> {
+    const userLiked = sauce.userLiked
+    const userDisliked = sauce.userDisliked
+
+    if (userLike == 0) {
+      const foundUserLiked = userLiked.find(usersId => userId == userId);
+      const foundUserDisliked = userDisliked.find(usersId => usersId == userId);
+      
+      if (foundUserLiked) {
+        Sauce.updateOne({ _id: req.params.id },
+        { $pull: { userLiked:userId}, $inc :{likes:-1}})
+        .then(() => res.status(200).json({ message: 'naime plus' }))
+        .catch(error => res.status(400).json({ error }));
+      }else if (foundUserDisliked) {
+        Sauce.updateOne({ _id:req.params.id},
+          {$pull:{ userDisliked:userId},$inc : {dislikes: -1}})
+          .then(()=> res.status(200).json({ message:'ne deteste plus'}))
+          .catch(error => res.status(400).json({ error }));
+      }
+    }else if (userLike == 1) {
+      Sauce.updateOne({ _id:req.params.id},
+        {$push: { usersLiked:userId}, $inc:{likes:1}})
+        .then(()=> res.status(200).json({ message:'aime'}))
+        .catch(error => res.status(400).json({ error }));
+
+    }else if (userLike == -1) {
+      Sauce.updateOne({ _id: req.params.id},
+        { $push: { userDisliked: userId},$inc: {dislikes:1}})
+        .then(()=> res.status(200).json({ message:'naime pas'}))
+        .catch(error => res.status(400).json({ error }));
+    }
+  })
+  .catch((error)=> {res.status(404).json({error})});
+};
