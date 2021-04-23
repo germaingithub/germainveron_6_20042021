@@ -1,5 +1,6 @@
 const Sauce = require('../models/sauce');
 const fs = require('fs');
+const xss = require('xss');
 
 exports.getOneSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id })
@@ -18,10 +19,10 @@ exports.createSauce = (req, res, next) => {
   delete sauceObject._id;
   const sauce = new Sauce({
     ...sauceObject,
-    name: sauceObject.name,
-    manufacturer: sauceObject.manufacturer,
-    description: sauceObject.description,
-    mainPepper: sauceObject.mainPepper,
+    name: xss(sauceObject.name),
+    manufacturer: xss(sauceObject.manufacturer),
+    description: xss(sauceObject.description),
+    mainPepper: xss(sauceObject.mainPepper),
     imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
     likes: "0",
     dislikes: "0",
