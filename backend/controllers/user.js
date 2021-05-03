@@ -2,8 +2,23 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const maskData = require('maskdata');
 const User = require('../models/User');
+var passwordValidator = require('password-validator');
+
+const schemaPassValid = new passwordValidator();
+
+schemaPassValid
+.is().min(8)
+.is().max(50)
+.has().uppercase()
+.has().lowercase()
+.has().digits(2)
+.has().not().spaces()
+.is().not().oneOf(['Passw0rd', 'Password123']);
 
 exports.signup =(req,res,next)=>{
+    if (!schemaPassValid.validate(req.body.password)) {
+    res.status(401).json({message:"Sécurité du mot de passe faible. 8 caractère, des majuscules et deux chiffres sont requis"})
+  }
     bcrypt.hash(req.body.password,10)
     .then(hash =>{
         const user = new User({
